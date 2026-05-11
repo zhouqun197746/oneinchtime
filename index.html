@@ -1,0 +1,1921 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>周群 | 资深动态视觉设计师</title>
+<style>
+/* ══════════════════════════════════════
+   全局样式
+   ══════════════════════════════════════ */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; font-size: 16px; }
+body {
+  font-family: -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  color: #1a1a1a; background: #fff; line-height: 1.7; overflow-x: hidden;
+}
+a { color: inherit; text-decoration: none; }
+img { max-width: 100%; display: block; }
+
+/* Typography */
+h1,h2,h3{font-weight:600;letter-spacing:-.02em}
+h1{font-size:clamp(2.5rem,6vw,4.5rem);line-height:1.1}
+h2{font-size:clamp(1.8rem,3.5vw,2.8rem);line-height:1.2}
+h3{font-size:1.25rem;line-height:1.4}
+p{font-size:1rem;color:#555}
+
+/* ─── 编辑模式：可编辑元素 ─── */
+[contenteditable] {
+  outline: none;
+  border-radius: 3px;
+  transition: all .2s;
+  cursor: text;
+}
+[contenteditable]:hover {
+  background: rgba(66,153,225,.08);
+}
+[contenteditable]:focus {
+  background: rgba(66,153,225,.12);
+  box-shadow: 0 0 0 2px rgba(66,153,225,.25);
+}
+
+/* ─── 编辑工具栏 ─── */
+#edit-toolbar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
+  display: none; align-items: center; gap: .8rem;
+  padding: .7rem 2rem;
+  background: linear-gradient(135deg, #1a1a2e, #16213e);
+  color: #fff; font-size: .85rem;
+  box-shadow: 0 4px 20px rgba(0,0,0,.3);
+}
+#edit-toolbar.show { display: flex; }
+#edit-toolbar .toolbar-label {
+  font-weight: 700; letter-spacing: .05em; color: #c9a96e;
+  margin-right: .5rem;
+}
+#edit-toolbar button {
+  padding: .45rem 1.1rem; border: 1px solid rgba(255,255,255,.2);
+  border-radius: 6px; background: rgba(255,255,255,.08); color: #fff;
+  font-size: .8rem; cursor: pointer; transition: all .2s; font-weight: 500;
+}
+#edit-toolbar button:hover { background: rgba(255,255,255,.18); border-color: rgba(255,255,255,.35); }
+#edit-toolbar .btn-save { background: #27ae60; border-color: #27ae60; }
+#edit-toolbar .btn-save:hover { background: #2ecc71; }
+#edit-toolbar .btn-export { background: #2980b9; border-color: #2980b9; }
+#edit-toolbar .btn-export:hover { background: #3498db; }
+#edit-toolbar .btn-toggle {
+  margin-left: auto; background: transparent; color: #ccc;
+  border-color: rgba(255,255,255,.15); font-weight: 400;
+}
+#edit-hint {
+  position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%);
+  padding: .7rem 1.5rem; border-radius: 30px;
+  background: rgba(26,26,46,.92); color: #fff; font-size: .82rem;
+  z-index: 9998; display: none; backdrop-filter: blur(10px);
+  box-shadow: 0 4px 24px rgba(0,0,0,.2);
+}
+#edit-hint.show { display: block; animation: fadeUp .4s ease; }
+
+/* ─── 编辑切换按钮（正常模式） ─── */
+#edit-toggle-btn {
+  position: fixed; right: 1.5rem; bottom: 2rem; z-index: 999;
+  width: 48px; height: 48px; border-radius: 50%;
+  background: #1a1a1a; color: #fff; border: none;
+  font-size: 1.3rem; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 16px rgba(0,0,0,.18);
+  transition: all .3s ease;
+}
+#edit-toggle-btn:hover { background: #333; transform: scale(1.08); }
+
+/* ─── Navigation ─── */
+.nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 1.2rem 4%; background: rgba(255,255,255,.92);
+  backdrop-filter: blur(12px); border-bottom: 1px solid rgba(0,0,0,.05);
+  transition: transform .3s, box-shadow .3s;
+}
+.nav.scrolled { box-shadow: 0 2px 24px rgba(0,0,0,.06); }
+.editing .nav { top: 52px; } /* 编辑模式下导航下移 */
+.nav-logo { font-size: 1.15rem; font-weight: 700; letter-spacing: -.02em; }
+.nav-links { display: flex; gap: 2rem; list-style: none; }
+.nav-links a {
+  font-size: .9rem; color: #888; font-weight: 500; transition: color .25s;
+  position: relative;
+}
+.nav-links a::after {
+  content:'';position:absolute;bottom:-4px;left:0;width:0;height:2px;
+  background:#1a1a1a;transition:width .25s ease;
+}
+.nav-links a:hover { color: #1a1a1a; }
+.nav-links a:hover::after { width: 100%; }
+
+/* ─── Hero ─── */
+.hero {
+  min-height:100vh;display:flex;flex-direction:column;justify-content:center;
+  padding: 0 8%; position: relative;
+}
+.hero-tagline { font-size:1rem;color:#999;letter-spacing:.15em;text-transform:uppercase;margin-bottom:1rem;opacity:0;animation:fadeUp .8s ease .2s forwards; }
+.hero-name { margin-bottom: 1.5rem; opacity: 0; animation:fadeUp .8s ease .4s forwards; }
+.hero-name span { color: #c9a96e; }
+.hero-subtitle { font-size:clamp(1.1rem,2vw,1.4rem);color:#666;font-weight:400;max-width:520px;margin-bottom:2.5rem;opacity:0;animation:fadeUp .8s ease .6s forwards; }
+.hero-actions { display:flex;gap:1rem;opacity:0;animation:fadeUp .8s ease .8s forwards;flex-wrap:wrap; }
+.btn {
+  display:inline-flex;align-items:center;gap:.5rem;padding:.85rem 2rem;border-radius:50px;
+  font-size:.9rem;font-weight:600;cursor:pointer;transition:all .3s ease;border:none;
+}
+.btn-primary { background:#1a1a1a;color:#fff; }
+.btn-primary:hover { background:#333;transform:translateY(-2px); }
+.btn-outline { background:transparent;color:#1a1a1a;border:1.5px solid #ddd; }
+.btn-outline:hover { border-color:#1a1a1a;transform:translateY(-2px); }
+.scroll-hint { position:absolute;bottom:3rem;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:.5rem;color:#bbb;font-size:.75rem;letter-spacing:.1em;opacity:0;animation:fadeUp .8s ease 1.2s forwards; }
+.scroll-line { width:1px;height:40px;background:linear-gradient(to bottom,#ccc,transparent);animation:scrollPulse 2s ease infinite; }
+
+/* ─── Section Common ─── */
+.section { padding:7rem 8%;max-width:1400px;margin:0 auto; }
+.section-label { font-size:.75rem;letter-spacing:.2em;text-transform:uppercase;color:#c9a96e;font-weight:600;margin-bottom:.75rem; }
+.section-title { margin-bottom: 1rem; }
+.section-desc { max-width:600px;margin-bottom:3.5rem;color:#777; }
+
+.reveal { opacity:0;transform:translateY(40px);transition:opacity .7s ease,transform .7s ease; }
+.reveal.visible { opacity:1;transform:translateY(0); }
+
+/* ─── About ─── */
+.about-grid { display:grid;grid-template-columns:1fr 1.3fr;gap:5rem;align-items:start; }
+/* ─── 个人照片上传区 ─── */
+.about-photo-wrap { aspect-ratio:3/4;background:#f5f5f5;border-radius:12px;overflow:hidden;position:relative;cursor:pointer; }
+.about-photo-placeholder { width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#ccc;font-size:.9rem;background:linear-gradient(135deg,#f8f8f8,#eee);gap:.5rem;transition:all .3s ease; }
+.about-photo-wrap:hover .about-photo-upload-hint { opacity:1;transform:translateY(0); }
+.about-photo-upload-hint { position:absolute;bottom:0;left:0;right:0;padding:.7rem;background:rgba(201,169,110,.92);color:#fff;font-size:.78rem;text-align:center;font-weight:600;letter-spacing:.05em;opacity:0;transform:translateY(100%);transition:all .3s ease;z-index:3;pointer-events:none; }
+.about-photo-img { width:100%;height:100%;object-fit:cover;display:block;position:absolute;top:0;left:0;z-index:1; }
+.about-photo-change-btn { position:absolute;bottom:.6rem;right:.6rem;z-index:4;padding:.35rem .7rem;border-radius:20px;background:rgba(0,0,0,.55);color:#fff;font-size:.72rem;font-weight:600;cursor:pointer;border:none;transition:background .2s;pointer-events:auto; display:none; }
+.about-photo-wrap.has-photo .about-photo-change-btn { display:block; }
+.about-photo-change-btn:hover { background:rgba(0,0,0,.75); }
+.about-photo-del-btn { position:absolute;top:.6rem;right:.6rem;z-index:4;width:28px;height:28px;border-radius:50%;background:rgba(231,76,60,.85);color:#fff;border:none;font-size:.85rem;cursor:pointer;display:none;align-items:center;justify-content:center;transition:background .2s;pointer-events:auto; }
+.about-photo-wrap.has-photo .about-photo-del-btn { display:flex; }
+.about-photo-del-btn:hover { background:rgba(192,57,43,1); }
+.about-bio p { margin-bottom:1.25rem;font-size:1.02rem;color:#555;line-height:1.85; }
+.about-stats { display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin-top:2.5rem;padding-top:2.5rem;border-top:1px solid #eee; }
+.stat-number { font-size:2rem;font-weight:700;color:#1a1a1a; }
+.stat-label { font-size:.82rem;color:#999;margin-top:.25rem; }
+
+/* ─── Portfolio Gallery ─── */
+.gallery-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem;margin-top:2rem; }
+.gallery-item {
+  border-radius:10px;overflow:hidden;position:relative;cursor:pointer;
+  aspect-ratio:16/10;background:#f5f5f5;transition:transform .3s ease;
+}
+.gallery-item:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,.12); }
+.gallery-item.tall { aspect-ratio:3/4; }
+.gallery-item.wide { grid-column:span 2;aspect-ratio:21/9; }
+.gallery-placeholder { width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.5rem;color:#aaa;font-size:.82rem;text-align:center;padding:1rem;background:linear-gradient(135deg,#f7f7f7,#efefef);transition:all .35s ease; }
+.gallery-item:hover .gallery-placeholder { transform:scale(1.03);background:linear-gradient(135deg,#f0f0f0,#e5e5e5); }
+.gallery-overlay { position:absolute;inset:0;background:rgba(26,26,26,.85);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.4rem;opacity:0;transition:opacity .35s ease;color:#fff;padding:1.5rem;z-index:2;pointer-events:none; }
+.gallery-item:hover .gallery-overlay { opacity:1; }
+.overlay-title { font-size:1.1rem;font-weight:600; }
+.overlay-desc { font-size:.82rem;color:#ccc;text-align:center; }
+.gallery-media-count {
+  position:absolute;top:.6rem;right:.6rem;background:rgba(201,169,110,.9);color:#fff;
+  font-size:.7rem;font-weight:600;padding:.2rem .6rem;border-radius:20px;z-index:3;
+  pointer-events:none;
+}
+
+/* ─── Experience ─── */
+.exp-list { margin-top:2rem; }
+.exp-item { display:flex;gap:2rem;padding:1.8rem 0;border-bottom:1px solid #f0f0f0; }
+.exp-year { min-width:80px;font-size:.9rem;font-weight:700;color:#c9a96e;padding-top:.2rem; }
+.exp-content h3 { font-size:1.05rem;margin-bottom:.3rem; }
+.exp-content p { font-size:.9rem;color:#888; }
+
+/* ─── Contact ─── */
+.contact-section { background:#1a1a1a;color:#fff; }
+.contact-section .section-label { color:#c9a96e; }
+.contact-section .section-title { color:#fff; }
+.contact-section .section-desc { color:#999; }
+.contact-grid { display:grid;grid-template-columns:1fr 1fr;gap:4rem;margin-top:3rem; }
+.contact-info-item { margin-bottom:2rem; }
+.contact-info-label { font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:#888;margin-bottom:.4rem;font-weight:600; }
+.contact-info-value { font-size:1.05rem;color:#eee; }
+.cta-box { background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:2.5rem;text-align:center; }
+.cta-text { color:#ccc;margin-bottom:1.5rem;font-size:1rem;line-height:1.7; }
+
+/* ─── Footer ─── */
+.footer { text-align:center;padding:2.5rem 8%;color:#aaa;font-size:.82rem;border-top:1px solid rgba(255,255,255,.08); }
+
+/* ─── Animations ─── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+@keyframes scrollPulse{0%,100%{opacity:1;transform:scaleY(1)}50%{opacity:.4;transform:scaleY(.6)}}
+
+/* ─── Responsive ─── */
+@media(max-width:1024px){
+  .about-grid{grid-template-columns:1fr;gap:3rem}
+  .gallery-grid{grid-template-columns:repeat(2,1fr)}
+  .gallery-item.wide{grid-column:span 2}
+  .contact-grid{grid-template-columns:1fr;gap:2rem}
+  .section{padding:5rem 6%}
+}
+@media(max-width:768px){
+  .nav-links{display:none}
+  .hero{padding:0 6%}
+  .section{padding:4rem 5%}
+  .gallery-grid{grid-template-columns:1fr}
+  .gallery-item.wide{grid-column:span 1}
+  .about-stats{grid-template-columns:repeat(2,1rem)}
+  .hero-actions{flex-direction:column;width:fit-content}
+  .scroll-hint{display:none}
+}
+@media(max-width:480px){
+  .about-stats{grid-template-columns:1fr 1fr}
+  h1{font-size:2.2rem}
+}
+
+/* Toast提示 */
+.toast {
+  position: fixed; top: 70px; left: 50%; transform: translateX(-50%);
+  padding: .8rem 1.8rem; border-radius: 8px; z-index: 200001;
+  font-size: .85rem; font-weight: 500; color: #fff;
+  animation: toastIn .3s ease, toastOut .3s ease 2s forwards;
+}
+.toast-success { background: #27ae60; }
+.toast-info { background: #2980b9; }
+@keyframes toastIn { from{opacity:0;transform:translateX(-50%) translateY(-10px)}to{opacity:1;transform:translateX(-50%) translateY(0)} }
+@keyframes toastOut { from{opacity:1}to{opacity:0} }
+
+/* ══════════════════════════════
+   作品管理模态框
+   ══════════════════════════════ */
+#portfolio-modal {
+  display:none;position:fixed;inset:0;z-index:100000;
+  background:rgba(0,0,0,.6);backdrop-filter:blur(4px);
+  align-items:center;justify-content:center;padding:2rem;
+}
+#portfolio-modal.show{display:flex;animation:modalIn .25s ease}
+.pm-panel{
+  background:#fff;border-radius:16px;width:92%;max-width:800px;max-height:88vh;
+  overflow-y:auto;padding:2rem;box-shadow:0 20px 60px rgba(0,0,0,.3);
+}
+.pm-header{
+  display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;
+  padding-bottom:1rem;border-bottom:1px solid #eee;
+}
+.pm-header h3{font-size:1.3rem;color:#1a1a1a;display:flex;align-items:center;gap:.5rem}
+.pm-close{
+  width:36px;height:36px;border-radius:50%;border:none;background:#f5f5f5;font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center;
+}
+.pm-close:hover{background:#eee}
+.pm-add-btn{
+  padding:.45rem 1.1rem;border:1px solid #c9a96e;border-radius:6px;
+  background:#c9a96e;color:#fff;font-size:.8rem;cursor:pointer;font-weight:600;
+  transition:all .2s;
+}
+.pm-add-btn:hover{background:#b8944d}
+
+.pm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:1.5rem}
+.pm-card{
+  border:2px solid #f0f0f0;border-radius:12px;overflow:hidden;transition:border-color .2s;background:#fafafa;
+}
+.pm-card:hover{border-color:#c9a96e}
+.pm-card-header{
+  display:flex;align-items:center;justify-content:space-between;padding:.75rem .9rem;
+  background:#f8f8f8;border-bottom:1px solid #f0f0f0;
+}
+.pm-card-header span{font-size:.85rem;font-weight:600;color:#333}
+.pm-card-del{
+  width:28px;height:28px;border-radius:50%;border:none;background:transparent;
+  color:#ccc;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;
+}
+.pm-card-del:hover{background:#fef0ef;color:#e74c3c}
+
+.pm-card-media-list{
+  padding:.75rem;max-height:180px;overflow-y:auto;
+}
+.pm-media-thumb{
+  position:relative;aspect-ratio:16/10;background:#eee;border-radius:6px;overflow:hidden;
+  margin-bottom:.5rem;cursor:grab;transition:transform .2s,box-shadow .2s;
+  user-select:none;
+}
+.pm-media-thumb:hover{transform:scale(1.02);box-shadow:0 4px 12px rgba(0,0,0,.15)}
+.pm-media-thumb:active{cursor:grabbing}
+.pm-media-thumb.dragging{opacity:.4;transform:scale(.95)}
+.pm-media-thumb.drag-over{border:2px dashed #c9a96e;background:#fdfaf3}
+.pm-media-thumb img,.pm-media-thumb video{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
+/* 缩略图操作按钮组 */
+.pm-thumb-actions{
+  position:absolute;top:4px;left:4px;display:flex;gap:3px;z-index:3;
+}
+.pm-thumb-actions button{
+  width:22px;height:22px;border-radius:50%;border:none;font-size:.65rem;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  background:rgba(0,0,0,.6);color:#fff;transition:background .2s;
+  pointer-events:auto;
+}
+.pm-thumb-actions button:hover{background:rgba(0,0,0,.85)}
+.pm-thumb-actions .pm-btn-up:hover{background:#27ae60}
+.pm-thumb-actions .pm-btn-down:hover{background:#2980b9}
+.pm-thumb-actions .pm-btn-preview:hover{background:#8e44ad}
+.pm-media-thumb-remove{
+  position:absolute;top:4px;right:4px;width:22px;height:22px;border-radius:50%;
+  background:rgba(231,76,60,.85);color:#fff;border:none;font-size:.7rem;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2;
+  pointer-events:auto;
+}
+.pm-media-add{
+  aspect-ratio:16/10;border:2px dashed #ddd;border-radius:6px;display:flex;
+  flex-direction:column;align-items:center;justify-content:center;gap:.3rem;
+  color:#999;font-size:.8rem;cursor:pointer;transition:all .2s;
+}
+.pm-media-add:hover{border-color:#c9a96e;color:#c9a96e;background:#fdfaf3}
+
+.pm-card-info{padding:.75rem .9rem}
+.pm-card-info input{
+  width:100%;border:1px solid #e0e0e0;border-radius:6px;padding:.5rem .7rem;font-size:.85rem;margin-bottom:.4rem;
+  font-family:inherit;color:#333;outline:none;transition:border-color .2s;
+}
+.pm-card-info input:focus{border-color:#c9a96e}
+.pm-card-info label{font-size:.72rem;color:#888;font-weight:600;margin-bottom:.15rem;display:block}
+.pm-card-layout{
+  display:flex;gap:.4rem;margin-top:.5rem;
+}
+.pm-card-layout button{
+  flex:1;padding:.35rem;border-radius:4px;border:1px solid #e0e0e0;background:#fff;font-size:.72rem;cursor:pointer;transition:all .2s;
+}
+.pm-card-layout button.active{background:#c9a96e;color:#fff;border-color:#c9a96e}
+.btn-manage-works{ background:#8b5cf6 !important;border-color:#8b5cf6 !important; }
+.btn-manage-works:hover{background:#7c3aed !important }
+
+/* ─── 媒体文件夹状态指示 ─── */
+.media-dir-status {
+  display:inline-flex;align-items:center;gap:.4rem;
+  font-size:.75rem;padding:.25rem .6rem;border-radius:12px;
+  margin-left:auto;transition:all .2s;
+}
+.media-dir-status.disconnected{ background:rgba(231,76,60,.1);color:#e74c3c; }
+.media-dir-status.connected{ background:rgba(39,174,96,.1);color:#27ae60; }
+#btn-set-media-dir{
+  padding:.35rem .7rem;border:1px solid #e67e22;border-radius:6px;
+  background:transparent;color:#e67e22;font-size:.75rem;cursor:pointer;
+  transition:all .2s;font-weight:600;
+}
+#btn-set-media-dir:hover{ background:rgba(230,126,34,.08);border-color:#d35400; }
+
+/* ══════════════════════════════
+   Lightbox — 作品详情轮播
+   ══════════════════════════════ */
+#lightbox{
+  display:none;position:fixed;inset:0;z-index:150000;
+  background:rgba(0,0,0,.95);backdrop-filter:blur(8px);
+  align-items:center;justify-content:center;
+}
+#lightbox.show{display:flex}
+.lb-container{
+  width:90%;max-width:1200px;height:85vh;display:flex;flex-direction:column;
+}
+.lb-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:.8rem 1.2rem;color:#fff;flex-shrink:0;
+}
+.lb-title{font-size:1.1rem;font-weight:600}
+.lb-desc{font-size:.85rem;color:#aaa;margin-top:.2rem}
+.lb-count{font-size:.82rem;color:#888}
+.lb-close{
+  width:40px;height:40px;border-radius:50%;border:1px solid rgba(255,255,255,.2);
+  background:transparent;color:#fff;font-size:1.2rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:all .2s;
+}
+.lb-close:hover{background:rgba(255,255,255,.1)}
+
+.lb-viewport{
+  flex:1;display:flex;align-items:center;justify-content:center;
+  position:relative;overflow:hidden;min-height:0;
+}
+.lb-slide{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  opacity:0;transition:opacity .4s ease;
+}
+.lb-slide.active{opacity:1}
+.lb-slide img{max-width:100%;max-height:100%;object-fit:contain;}
+.lb-slide video{max-width:100%;max-height:100%;object-fit:contain;}
+
+.lb-nav-btn{
+  position:absolute;top:50%;transform:translateY(-50%);
+  width:48px;height:48px;border-radius:50%;border:1px solid rgba(255,255,255,.2);
+  background:rgba(0,0,0,.5);color:#fff;font-size:1.3rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;z-index:3;transition:all .2s;
+}
+.lb-nav-btn:hover{background:rgba(201,169,110,.8);border-color:#c9a96e}
+.lb-prev{left:1rem}
+.lb-next{right:1rem}
+
+.lb-dots{
+  display:flex;justify-content:center;gap:.5rem;padding:.8rem;flex-shrink:0;
+}
+.lb-dot{
+  width:10px;height:10px;border-radius:50%;border:1px solid rgba(255,255,255,.4);
+  background:transparent;cursor:pointer;transition:all .2s;
+}
+.lb-dot.active{background:#c9a96e;border-color:#c9a96e;transform:scale(1.2)}
+.lb-empty-state{
+  text-align:center;color:#666;padding:3rem;
+}
+.lb-empty-state .lb-empty-icon{font-size:3rem;margin-bottom:1rem}
+.lb-empty-state p{color:#999;font-size:.9rem}
+
+@keyframes modalIn{from{opacity:0}to{opacity:1}}
+
+/* 作品图片/视频渲染样式（画廊封面） */
+.gallery-item .gallery-cover{
+  width:100%;height:100%;object-fit:cover;display:block;position:absolute;top:0;left:0;z-index:1;
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ 编辑工具栏 ═══ -->
+<div id="edit-toolbar">
+  <span class="toolbar-label">✏️ 编辑模式</span>
+  <button onclick="saveData()" class="btn-save">💾 保存修改</button>
+  <button onclick="openPortfolioManager()" class="btn-manage-works">🖼️ 管理作品</button>
+  <button onclick="exportClean()" class="btn-export">📤 导出部署版</button>
+  <span id="media-dir-status" class="media-dir-status disconnected">📁 未连接</span>
+  <button id="btn-set-media-dir" onclick="initMediaDir()">📂 设置媒体文件夹</button>
+  <button onclick="resetData()" style="background:transparent;color:#e74c3c;border-color:rgba(231,76,60,.3)">↩️ 恢复默认</button>
+  <button onclick="toggleEdit()" class="btn-toggle">✕ 退出编辑</button>
+</div>
+<div id="edit-hint">💡 点击页面中任意文字即可直接编辑 | 改完后记得点「保存修改」</div>
+
+<!-- ═══ 编辑切换按钮 ═══ -->
+<button id="edit-toggle-btn" onclick="toggleEdit()" title="进入编辑模式">✏️</button>
+
+
+<!-- ═══ Navigation ═══ -->
+<nav class="nav" id="nav">
+  <div class="nav-logo" contenteditable="true" data-key="navLogo">Zhou Qun</div>
+  <ul class="nav-links">
+    <li><a href="#about">关于</a></li>
+    <li><a href="#works">作品</a></li>
+    <li><a href="#exp">经历</a></li>
+    <li><a href="#contact">联系</a></li>
+  </ul>
+</nav>
+
+<!-- ═══ Hero ═══ -->
+<section class="hero">
+  <p class="hero-tagline" contenteditable="true" data-key="heroTagline">Senior Motion Designer</p>
+  <h1 class="hero-name" contenteditable="true" data-key="heroName">我是<span>周群</span></h1>
+  <p class="hero-subtitle" contenteditable="true" data-key="heroSubtitle">资深动态视觉设计师 · 1998年入行<br>专注三维动画与动态图形设计二十八年</p>
+  <div class="hero-actions">
+    <a href="#works" class="btn btn-primary" contenteditable="true" data-key="btnWorks">查看作品</a>
+    <a href="#contact" class="btn btn-outline" contenteditable="true" data-key="btnContact">联系我</a>
+  </div>
+  <div class="scroll-hint">
+    <span contenteditable="true" data-key="scrollText">SCROLL</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- ═══ About ═══ -->
+<section class="section" id="about">
+  <div class="reveal">
+    <p class="section-label" contenteditable="true" data-key="aboutLabel">About Me</p>
+    <h2 class="section-title" contenteditable="true" data-key="aboutTitle">关于我</h2>
+    <p class="section-desc" contenteditable="true" data-key="aboutDesc">从传统广电到数字时代，始终在用画面表达思想。</p>
+  </div>
+  <div class="about-grid">
+    <div class="about-photo-wrap reveal" id="profile-photo-wrap" onclick="triggerProfilePhotoUpload()">
+      <!-- 已上传时显示图片 -->
+      <img id="profile-photo-img" class="about-photo-img" style="display:none" alt="个人照片">
+      <!-- 未上传/占位 -->
+      <div class="about-photo-placeholder" id="profile-photo-placeholder">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="1"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>
+        <span style="margin-top:.5rem">点击上传个人照片</span>
+        <span style="font-size:.75rem;color:#aaa">支持 JPG / PNG</span>
+      </div>
+      <div class="about-photo-upload-hint">📷 点击选择照片</div>
+      <button class="about-photo-change-btn" onclick="event.stopPropagation();triggerProfilePhotoUpload()">📷 更换照片</button>
+      <button class="about-photo-del-btn" onclick="event.stopPropagation();removeProfilePhoto()" title="删除照片">✕</button>
+      <!-- 隐藏的文件input -->
+      <input type="file" id="profile-photo-input" accept="image/jpeg,image/png,image/webp" style="display:none" onchange="handleProfilePhotoUpload(this)">
+    </div>
+    <div class="about-bio reveal">
+      <p contenteditable="true" data-key="bio1">1998年入行，深耕动态视觉设计领域已逾二十六年。</p>
+      <p contenteditable="true" data-key="bio2">2006年至2020年在凤凰卫视工作十四年，专注于栏目包装、动态视觉设计与后期制作。经历过电视行业从标清到高清再到全流程数字化的完整转型。</p>
+      <p contenteditable="true" data-key="bio3">长期使用Blender、Cinema 4D、Houdini等三维工具进行创作，同时熟练掌握After Effects、Nuke等后期合成软件。近年来积极探索AI辅助视觉创作流程。</p>
+      <p contenteditable="true" data-key="bio4">目前以自由职业身份承接商业项目与创意制作，涵盖品牌片头、产品动画、科技感视觉、数据可视化等多个方向。擅长国风水墨风格表达和林风眠美学风格的动态演绎。</p>
+      <div class="about-stats">
+        <div>
+          <div class="stat-number"><span contenteditable="true" data-key="statYearsNum">28</span><span style="font-size:1rem;color:#c9a96e" contenteditable="true" data-key="statYearsUnit">年</span></div>
+          <div class="stat-label" contenteditable="true" data-key="statYearsLabel">行业经验</div>
+        </div>
+        <div>
+          <div class="stat-number"><span contenteditable="true" data-key="statYearsFH">14</span><span style="font-size:1rem;color:#c9a96e" contenteditable="true" data-key="statYearsFHUnit">年</span></div>
+          <div class="stat-label" contenteditable="true" data-key="statFHLabel">凤凰卫视</div>
+        </div>
+        <div>
+          <div class="stat-number"><span contenteditable="true" data-key="statToolsNum">3</span><span style="font-size:1rem;color:#c9a96e" contenteditable="true" data-key="statToolsUnit">大</span></div>
+          <div class="stat-label" contenteditable="true" data-key="statToolsLabel">核心三维工具</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ Portfolio（直接跟在About后面） ═══ -->
+<section class="section" id="works" style="padding-top:5rem">
+  <div class="reveal">
+    <p class="section-label" contenteditable="true" data-key="workLabel">Portfolio</p>
+    <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap">
+      <h2 class="section-title" contenteditable="true" data-key="workTitle" style="margin:0">作品集</h2>
+      <button onclick="openPortfolioManager()" id="works-manage-btn" title="上传/管理作品的图片和视频"
+              style="font-size:.78rem;padding:.4rem .9rem;border:2px solid #c9a96e;background:transparent;color:#c9a96e;
+                     border-radius:20px;cursor:pointer;white-space:nowrap;font-weight:500;transition:all .2s"
+              onmouseover="this.style.background='#c9a96e';this.style.color='#fff'"
+              onmouseout="this.style.background='transparent';this.style.color='#c9a96e'">🖼️ 管理作品</button>
+    </div>
+    <p class="section-desc" contenteditable="true" data-key="workDesc">精选商业项目与个人创作。每件作品都是一次视觉叙事的尝试。</p>
+  </div>
+  <div class="gallery-grid reveal" id="gallery-grid">
+    <!-- 由JS动态渲染 -->
+  </div>
+</section>
+
+<!-- ═══ Experience ═══ -->
+<section class="section" id="exp" style="padding-top:5rem">
+  <div class="reveal">
+    <p class="section-label" contenteditable="true" data-key="expLabel">Experience</p>
+    <h2 class="section-title" contenteditable="true" data-key="expTitle">工作经历</h2>
+    <p class="section-desc" contenteditable="true" data-key="expDesc">从入行至今的关键职业节点。</p>
+  </div>
+  <div class="exp-list reveal">
+    <div class="exp-item">
+      <div class="exp-year" contenteditable="true" data-key="expYear1">2006 – 2020</div>
+      <div class="exp-content">
+        <h3 contenteditable="true" data-key="expJob1">凤凰卫视</h3>
+        <p contenteditable="true" data-key="expDesc1">动态视觉设计师 / 后期制作 / 三维动画。负责栏目包装、节目片头、频道ID等视觉内容的设计与制作。十四年间见证了电视行业从标清到高清到4K的完整技术迭代。</p>
+      </div>
+    </div>
+    <div class="exp-item">
+      <div class="exp-year" contenteditable="true" data-key="expYear2">2020 – 至今</div>
+      <div class="exp-content">
+        <h3 contenteditable="true" data-key="expJob2">自由职业</h3>
+        <p contenteditable="true" data-key="expDesc2">独立承接商业项目。服务领域覆盖：品牌TVC与片头动画、产品三维展示、科技感数据可视化、AI辅助动态图形、虚拟制片前期预演等。</p>
+      </div>
+    </div>
+    <div class="exp-item">
+      <div class="exp-year" contenteditable="true" data-key="expYear3">1998 – 2006</div>
+      <div class="exp-content">
+        <h3 contenteditable="true" data-key="expJob3">早期职业生涯</h3>
+        <p contenteditable="true" data-key="expDesc3">入行初期从事视频剪辑与后期制作工作，积累了扎实的线性编辑与基础合成技能，为后续转向三维动态视觉打下基础。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ Contact ═══ -->
+<section class="section contact-section" id="contact">
+  <div class="reveal">
+    <p class="section-label" contenteditable="true" data-key="contactLabel">Get In Touch</p>
+    <h2 class="section-title" contenteditable="true" data-key="contactTitle">联系我</h2>
+    <p class="section-desc" contenteditable="true" data-key="contactDesc">商业合作、项目咨询、全职机会，欢迎随时沟通。</p>
+  </div>
+  <div class="contact-grid">
+    <div class="contact-info reveal">
+      <div class="contact-info-item">
+        <div class="contact-info-label">Phone</div>
+        <div class="contact-info-value" contenteditable="true" data-key="phone">185-1181-4319</div>
+      </div>
+      <div class="contact-info-item">
+        <div class="contact-info-label">Email</div>
+        <div class="contact-info-value" contenteditable="true" data-key="email">待填写</div>
+      </div>
+      <div class="contact-info-item">
+        <div class="contact-info-label">Location</div>
+        <div class="contact-info-value" contenteditable="true" data-key="location">中国 · 北京</div>
+      </div>
+      <div class="contact-info-item">
+        <div class="contact-info-label">WeChat</div>
+        <div class="contact-info-value" contenteditable="true" data-key="wechat">待填写</div>
+      </div>
+    </div>
+    <div class="cta-box reveal">
+      <p class="cta-text" contenteditable="true" data-key="ctaText">如果您有视觉项目需要合作，或对动态设计方向的人才需求感兴趣——<br>期待与您进一步交流。</p>
+      <a href="tel:18511814319" class="btn btn-primary" style="background:#c9a96e;border:none" contenteditable="true" data-key="ctaBtn">拨打电话 →</a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 作品管理模态框 ═══ -->
+<div id="portfolio-modal" onclick="if(event.target===this)closePortfolioManager()">
+  <div class="pm-panel">
+    <div class="pm-header">
+      <h3>🖼️ 管理作品集</h3>
+      <div style="display:flex;gap:.5rem;align-items:center">
+        <button class="pm-add-btn" onclick="addNewWork(event)">➕ 添加新作品</button>
+        <button class="pm-close" onclick="closePortfolioManager()">✕</button>
+      </div>
+    </div>
+    <p style="font-size:.82rem;color:#888;margin-bottom:1rem">每个作品可上传多张图片/多个视频。拖拽缩略图调整排序，点击放大预览。</p>
+    <div id="pm-grid" class="pm-grid">
+      <!-- 动态生成 -->
+    </div>
+  </div>
+</div>
+
+<!-- ═══ 管理面板内媒体预览（点击缩略图放大） ═══ -->
+<div id="pm-preview-modal" onclick="if(event.target===this)closePMPreview()" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;z-index:20000;background:rgba(0,0,0,.85);backdrop-filter:blur(8px);align-items:center;justify-content:center;flex-direction:column;gap:1rem;padding:2rem">
+  <div style="display:flex;align-items:center;justify-content:space-between;width:100%;max-width:900px;color:#fff">
+    <span id="pm-preview-name" style="font-size:.9rem;opacity:.8">文件名</span>
+    <span id="pm-preview-counter" style="font-size:.85rem;color:#c9a96e">1 / 5</span>
+    <button onclick="closePMPreview()" style="background:none;border:none;color:#fff;font-size:1.4rem;cursor:pointer;padding:.3rem .6rem" title="关闭">✕</button>
+  </div>
+  <div id="pm-preview-content" style="max-width:90vw;max-height:70vh;border-radius:8px;overflow:hidden"></div>
+  <div style="display:flex;gap:1rem;align-items:center">
+    <button onclick="pmPrevSlide()" style="padding:.5rem 1.2rem;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:8px;color:#fff;cursor:pointer;font-size:.85rem">◀ 上一张</button>
+    <span style="color:rgba(255,255,255,.5);font-size:.78rem">← → 键切换 · ESC 关闭</span>
+    <button onclick="pmNextSlide()" style="padding:.5rem 1.2rem;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:8px;color:#fff;cursor:pointer;font-size:.85rem">下一张 ▶</button>
+  </div>
+</div>
+
+<!-- ═══ Lightbox — 作品详情轮播 ═══ -->
+<div id="lightbox" onclick="if(event.target===this)closeLightbox()">
+  <div class="lb-container">
+    <div class="lb-header">
+      <div>
+        <div class="lb-title" id="lb-title"></div>
+        <div class="lb-desc" id="lb-desc"></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:1rem">
+        <span class="lb-count" id="lb-count"></span>
+        <button class="lb-close" onclick="closeLightbox()">✕</button>
+      </div>
+    </div>
+    <div class="lb-viewport" id="lb-viewport">
+      <!-- 动态生成幻灯片 -->
+    </div>
+    <div style="display:flex;align-items:center;justify-content:center;position:relative">
+      <button class="lb-nav-btn lb-prev" onclick="event.stopPropagation();lbPrev()" id="lb-prev-btn">❮</button>
+      <div class="lb-dots" id="lb-dots"></div>
+      <button class="lb-nav-btn lb-next" onclick="event.stopPropagation();lbNext()" id="lb-next-btn">❯</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ Footer ═══ -->
+<footer class="footer">
+  <p contenteditable="true" data-key="footer1">&copy; 2026 周群 Zhou Qun. All rights reserved.</p>
+  <p style="margin-top:.5rem;opacity:.6" contenteditable="true" data-key="footer2">Made with precision and passion.</p>
+</footer>
+
+
+<!-- ══════════════════════════════════════
+     JavaScript — v3.2 核心逻辑 + Lightbox + 动态作品管理
+     ══════════════════════════════════════ -->
+<script>
+// ═══ 默认数据 ═══
+const DEFAULT_DATA = {
+  navLogo: "Zhou Qun", heroTagline: "Senior Motion Designer",
+  heroName: '我是<span>周群</span>',
+  heroSubtitle: "资深动态视觉设计师 · 1998年入行<br>专注三维动画与动态图形设计二十八年",
+  btnWorks: "查看作品", btnContact: "联系我", scrollText: "SCROLL",
+  aboutLabel: "About Me", aboutTitle: "关于我",
+  aboutDesc: "从传统广电到数字时代，始终在用画面表达思想。",
+  photoPlaceholder: "个人照片占位",
+  bio1: "1998年入行，深耕动态视觉设计领域已逾二十六年。",
+  bio2: "2006年至2020年在凤凰卫视工作十四年，专注于栏目包装、动态视觉设计与后期制作。经历过电视行业从标清到高清再到全流程数字化的完整转型。",
+  bio3: "长期使用Blender、Cinema 4D、Houdini等三维工具进行创作，同时熟练掌握After Effects、Nuke等后期合成软件。近年来积极探索AI辅助视觉创作流程。",
+  bio4: "目前以自由职业身份承接商业项目与创意制作，涵盖品牌片头、产品动画、科技感视觉、数据可视化等多个方向。擅长国风水墨风格表达和林风眠美学风格的动态演绎。",
+  statYearsNum: "28", statYearsUnit: "年", statYearsLabel: "行业经验",
+  statYearsFH: "14", statYearsFHUnit: "年", statFHLabel: "凤凰卫视",
+  statToolsNum: "3", statToolsUnit: "大", statToolsLabel: "核心三维工具",
+
+  workLabel: "Portfolio", workTitle: "作品集",
+  workDesc: "精选商业项目与个人创作。每件作品都是一次视觉叙事的尝试。",
+
+  // 默认6个作品（每个支持多媒体列表）
+  portfolioItems: [
+    { id: 'p1', title: '奔腾正当时', desc: '虚拟博物馆系统 · 四幕装置叙事\n科技感开篇视觉方案',
+      layout: 'wide', mediaList: [] },
+    { id: 'p2', title: 'AI动画串联片', desc: 'AI生成画面+原创配乐\n完整开篇叙事',
+      layout: 'tall', mediaList: [] },
+    { id: 'p3', title: '城市地标光效合成', desc: 'The Mill风格横向追踪',
+      layout: '', mediaList: [] },
+    { id: 'p4', title: '微缩城市景观', desc: 'Oddfellows风格发光路径',
+      layout: '', mediaList: [] },
+    { id: 'p5', title: '认知拓扑图', desc: '节点+连接线涌现结构',
+      layout: 'tall', mediaList: [] },
+    { id: 'p6', title: '蒸汽机械美学', desc: '维多利亚×故宫分镜网格',
+      layout: '', mediaList: [] },
+  ],
+
+  expLabel: "Experience", expTitle: "工作经历", expDesc: "从入行至今的关键职业节点。",
+  expYear1: "2006 – 2020", expJob1: "凤凰卫视",
+  expDesc1: "动态视觉设计师 / 后期制作 / 三维动画。负责栏目包装、节目片头、频道ID等视觉内容的设计与制作。十四年间见证了电视行业从标清到高清到4K的完整技术迭代。",
+  expYear2: "2020 – 至今", expJob2: "自由职业",
+  expDesc2: "独立承接商业项目。服务领域覆盖：品牌TVC与片头动画、产品三维展示、科技感数据可视化、AI辅助动态图形、虚拟制片前期预演等。",
+  expYear3: "1998 – 2006", expJob3: "早期职业生涯",
+  expDesc3: "入行初期从事视频剪辑与后期制作工作，积累了扎实的线性编辑与基础合成技能，为后续转向三维动态视觉打下基础。",
+  contactLabel: "Get In Touch", contactTitle: "联系我", contactDesc: "商业合作、项目咨询、全职机会，欢迎随时沟通。",
+  phone: "185-1181-4319", email: "待填写", location: "中国 · 北京", wechat: "待填写",
+  ctaText: "如果您有视觉项目需要合作，或对动态设计方向的人才需求感兴趣——<br>期待与您进一步交流。",
+  ctaBtn: "拨打电话 →",
+  footer1: "&copy; 2026 周群 Zhou Qun. All rights reserved.",
+  footer2: "Made with precision and passion."
+};
+
+let isEditing = false;
+let currentPortfolioItems = [];
+let nextIdCounter = 100;
+let _profilePhotoData = '';     // 头像数据：Data URL（运行时显示用）
+let _mediaDirHandle = null;     // FileSystemDirectoryHandle
+let _mediaDirPath = '';          // 用户选择的媒体目录路径（显示用）
+let _profilePhotoPath = '';      // 头像文件名，如 'profile.jpg'
+
+// ════════════════════════════════════════
+//  IndexedDB 图片缓存层（刷新后自动恢复）
+//  不依赖 File System Access API 句柄，独立于 localStorage
+//  容量可达数百MB，专门解决 file:// 下刷新丢失问题
+// ════════════════════════════════════════
+const IDB_NAME = 'PortfolioMediaCache';
+const IDB_VERSION = 1;
+let _idbReady = false;
+
+function openIDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(IDB_NAME, IDB_VERSION);
+    req.onupgradeneeded = (e) => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains('media')) {
+        db.createObjectStore('media', { keyPath: 'key' });
+      }
+    };
+    req.onsuccess = (e) => { resolve(e.target.result); };
+    req.onerror = (e) => reject(e.target.error);
+  });
+}
+
+// 初始化 IndexedDB（页面加载时调用一次）
+async function initIDB() {
+  try {
+    window._idb = await openIDB();
+    _idbReady = true;
+    console.log('[IDBCache] 缓存数据库已就绪');
+  } catch(e) {
+    console.warn('[IDBCache] 初始化失败:', e);
+    _idbReady = false;
+  }
+}
+
+// 存一个媒体文件的 Data URL 到 IndexedDB
+async function idbPut(key, dataURL) {
+  if (!_idbReady || !dataURL) return;
+  try {
+    const tx = window._idb.transaction('media', 'readwrite');
+    tx.store.put({ key, dataURL, ts: Date.now() });
+    await tx.done;
+  } catch(e) { console.warn('[IDBCache] 写入失败:', key, e); }
+}
+
+// 从 IndexedDB 取一个媒体的 Data URL
+async function idbGet(key) {
+  if (!_idbReady) return null;
+  try {
+    const tx = window._idb.transaction('media', 'readonly');
+    const result = await tx.store.get(key);
+    return result ? result.dataURL : null;
+  } catch(e) { console.warn('[IDBCache] 读取失败:', key, e); return null; }
+}
+
+// 删除 IndexedDB 中的一条缓存
+async function idbDelete(key) {
+  if (!_idbReady) return;
+  try {
+    const tx = window._idb.transaction('media', 'readwrite');
+    await tx.store.delete(key);
+    await tx.done;
+  } catch(e) {}
+}
+
+// ── 选择媒体文件夹（首次使用或重新设置）──
+async function initMediaDir() {
+  try {
+    // 优先尝试重新连接已有权限的目录
+    if (_mediaDirHandle) {
+      try {
+        const perm = await _mediaDirHandle.requestPermission({ mode: 'readwrite' });
+        if (perm === 'granted') {
+          updateMediaStatus(true);
+          showToast('✅ 媒体文件夹已重新连接', 'success');
+          // 重新从磁盘读取所有图片
+          await loadDataAsync();
+          return;
+        }
+      } catch(e) { /* 权限过期，重新选择 */ }
+    }
+
+    // 让用户选择文件夹
+    const handle = await window.showDirectoryPicker({
+      mode: 'readwrite',
+      startIn: 'desktop'
+    });
+    _mediaDirHandle = handle;
+    _mediaDirPath = handle.name;
+
+    // 验证写入权限
+    const testFile = await handle.getFileHandle('.access_test', { create: true });
+    const writable = await testFile.createWritable();
+    await writable.write('ok');
+    await writable.close();
+    await handle.removeEntry('.access_test');
+
+    updateMediaStatus(true);
+    localStorage.setItem('portfolio_media_dir', 'connected');
+
+    // 持久化所有现有数据 + 重建显示URL
+    await persistAllMediaToDisk();
+
+    showToast('✅ 媒体文件夹已设置！上传的图片将保存为真实文件', 'success');
+  } catch(e) {
+    if (e.name === 'AbortError') { showToast('已取消选择', 'info'); return; }
+    console.error('设置媒体文件夹失败:', e);
+    showToast('⚠️ 设置失败：' + (e.message || '浏览器不支持此功能'), 'info');
+  }
+}
+
+function updateMediaStatus(connected) {
+  const el = document.getElementById('media-dir-status');
+  if (!el) return;
+  if (connected) {
+    el.className = 'media-dir-status connected';
+    el.textContent = '📁 ' + (_mediaDirPath || '已连接');
+  } else {
+    el.className = 'media-dir-status disconnected';
+    el.textContent = '📁 未连接';
+  }
+}
+
+// ── 写入单个媒体文件到磁盘 ──
+async function writeMediaToDisk(fileData, filename, subfolder) {
+  if (!_mediaDirHandle) return null;
+  try {
+    let dirHandle = _mediaDirHandle;
+    // 先验证句柄是否仍然有效（快速检测）
+    try {
+      await _mediaDirHandle.requestPermission({ mode: 'readwrite' });
+    } catch(permErr) {
+      console.warn('[MediaEngine] 目录句柄权限已失效:', permErr.message);
+      _mediaDirHandle = null;
+      updateMediaStatus(false);
+      throw new Error('目录连接已断开，请重新点「📂 设置媒体文件夹」');
+    }
+    if (subfolder) {
+      dirHandle = await _mediaDirHandle.getDirectoryHandle(subfolder, { create: true });
+    }
+    const fileHandle = await dirHandle.getFileHandle(filename, { create: true });
+    const writable = await fileHandle.createWritable();
+    await writable.write(fileData);
+    await writable.close();
+
+    const relPath = subfolder ? `${subfolder}/${filename}` : filename;
+    console.log(`[MediaEngine] 已写入: ${relPath}`);
+    return relPath;
+  } catch(e) {
+    if (e.message && e.message.includes('目录连接')) throw e; // 重新抛出自定义错误
+    console.error('[MediaEngine] 写入失败:', filename, e);
+    showToast(`⚠️ 写入 ${filename} 失败: ${e.message || '未知错误'}`, 'info');
+    return null;
+  }
+}
+
+// ── 从磁盘读取文件并返回可显示的URL（使用Data URL，兼容file://协议）──
+async function readFileAsURL(dirHandle, filename, subfolder) {
+  try {
+    let dir = dirHandle;
+    if (subfolder) dir = await dirHandle.getDirectoryHandle(subfolder);
+    const fh = await dir.getFileHandle(filename);
+    const file = await fh.getFile();
+    return await fileToDataURL(file);
+  } catch(e) {
+    console.error('[MediaEngine] 读取失败:', filename, e);
+    return null;
+  }
+}
+
+// ── 将File对象转为Data URL（解决file://下blob URL无法加载的问题）──
+function fileToDataURL(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(file);
+  });
+}
+
+// ── 将所有当前内存中的Base64/Blob数据持久化到磁盘 ──
+async function persistAllMediaToDisk() {
+  if (!_mediaDirHandle) return;
+  let writtenCount = 0;
+
+  // 1. 持久化头像（如果是Blob URL或Base64）
+  if (_profilePhotoData && (_profilePhotoData.startsWith('data:') || _profilePhotoData.startsWith('blob:'))) {
+    try {
+      const resp = await fetch(_profilePhotoData);
+      const blob = await resp.blob();
+      const ext = blob.type.includes('png') ? 'png' : 'jpg';
+      const path = await writeMediaToDisk(blob, `profile.${ext}`, '');
+      if (path) {
+        _profilePhotoPath = path;
+        // 写入后从磁盘读取回来作为显示URL
+        const displayURL = await readFileAsURL(_mediaDirHandle, `profile.${ext}`, '');
+        _profilePhotoData = displayURL || _profilePhotoData;
+        writtenCount++;
+      }
+    } catch(e) { console.error('持久化头像失败:', e); }
+  }
+
+  // 2. 持久化每件作品的媒体文件
+  for (let piIdx = 0; piIdx < currentPortfolioItems.length; piIdx++) {
+    const pi = currentPortfolioItems[piIdx];
+    if (!pi.mediaList) continue;
+    for (let mIdx = 0; mIdx < pi.mediaList.length; mIdx++) {
+      const m = pi.mediaList[mIdx];
+      // 只处理还没持久化的（data: 或 blob: 且没有_diskPath的）
+      if (m.url && (m.url.startsWith('data:') || m.url.startsWith('blob:')) && !m._diskPath) {
+        try {
+          const resp = await fetch(m.url);
+          const blob = await resp.blob();
+          const ext = m.name ? m.name.split('.').pop() : (blob.type.includes('png') ? 'png' : 'jpg');
+          const safeName = makeSafeFilename(m.name || `p${piIdx+1}_${mIdx+1}.${ext}`);
+          const subfolder = pi.id || `work_${piIdx+1}`;
+          const path = await writeMediaToDisk(blob, safeName, subfolder);
+
+          if (path) {
+            pi.mediaList[mIdx]._diskPath = path;
+            // 从磁盘读回显示URL
+            const displayURL = await readFileAsURL(_mediaDirHandle, safeName, subfolder);
+            if (displayURL) pi.mediaList[mIdx].url = displayURL;
+            pi.mediaList[mIdx].name = safeName;
+            writtenCount++;
+          }
+        } catch(err) { console.error('持久化媒体失败:', err); }
+      }
+    }
+  }
+
+  if (writtenCount > 0) {
+    saveData();
+    renderGallery();
+    renderProfilePhoto();
+    showToast(`💾 已将 ${writtenCount} 个文件写入磁盘`, 'success');
+  } else {
+    showToast('✅ 所有数据已在磁盘中', 'success');
+  }
+}
+
+// ── 生成安全的文件名 ──
+function makeSafeFilename(name) {
+  return name.replace(/[^a-zA-Z0-9_\u4e00-\u9fa5.-]/g, '_')
+             .replace(/_{2,}/g, '_')
+             .substring(0, 80);
+}
+
+
+// ═══ 初始化 ═══
+async function loadDataAsync() {
+  const saved = localStorage.getItem('portfolio_data');
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      Object.keys(data).forEach(key => {
+        if (key === 'portfolioItems' || key === 'profilePhoto' || key === 'profilePhotoPath') return;
+        const el = document.querySelector(`[data-key="${key}"]`);
+        if (el) el.innerHTML = data[key];
+      });
+
+      // 加载头像 —— 优先级：IndexedDB缓存 → 磁盘文件 → 旧版Base64
+      if (data.profilePhotoPath) {
+        _profilePhotoPath = data.profilePhotoPath;
+        // 优先从 IndexedDB 缓存恢复（不需要媒体文件夹连接）
+        const cached = await idbGet('__profile_photo');
+        if (cached) {
+          _profilePhotoData = cached;
+          console.log('[Load] 头像已从 IndexedDB 缓存恢复');
+        } else if (_mediaDirHandle) {
+          const url = await readFileAsURL(_mediaDirHandle, _profilePhotoPath, '');
+          if (url) { _profilePhotoData = url; } else { _profilePhotoData = data.profilePhoto || ''; }
+        } else {
+          _profilePhotoData = data.profilePhoto || '';
+        }
+      } else if (data.profilePhoto) {
+        // 旧版兼容：直接是 Base64/Data URL
+        _profilePhotoData = data.profilePhoto;
+      }
+      // 如果以上都没有，再尝试纯 IndexedDB（可能旧数据没存 profilePhotoPath）
+      if (!_profilePhotoData) {
+        const fallbackCached = await idbGet('__profile_photo');
+        if (fallbackCached) _profilePhotoData = fallbackCached;
+      }
+      renderProfilePhoto();
+
+      // 加载作品数据 —— 优先级：IndexedDB缓存 → 磁盘文件 → 标记缺失
+      if (data.portfolioItems) {
+        currentPortfolioItems = await Promise.all(data.portfolioItems.map(async (pi, idx) => {
+          const result = {
+            ...pi,
+            id: (typeof pi.id === 'string' && pi.id) ? pi.id : ('p' + String(idx + 1)),
+            mediaList: []
+          };
+          if (Array.isArray(pi.mediaList)) {
+            for (const m of pi.mediaList) {
+              const diskPath = m._diskPath || m.url;
+              const cacheKey = m._cacheKey || '';  // IndexedDB 缓存键
+
+              // 优先级1：IndexedDB 缓存（不需要媒体文件夹连接）
+              if (cacheKey) {
+                const cachedURL = await idbGet(cacheKey);
+                if (cachedURL) {
+                  result.mediaList.push({
+                    type: m.type, name: m.name,
+                    url: cachedURL,
+                    _diskPath: diskPath,
+                    _cacheKey: cacheKey
+                  });
+                  continue; // 成功，跳过后续尝试
+                }
+              }
+
+              // 优先级2：磁盘文件（需要媒体文件夹已连接）
+              if (_mediaDirHandle && diskPath && !diskPath.startsWith('data:') && !diskPath.startsWith('blob:') && !diskPath.startsWith('http')) {
+                const parts = diskPath.split('/');
+                const fname = parts.pop();
+                const subfolder = parts.join('/') || undefined;
+                const url = await readFileAsURL(_mediaDirHandle, fname, subfolder);
+                if (url) {
+                  result.mediaList.push({
+                    type: m.type, name: m.name,
+                    url: url,
+                    _diskPath: diskPath,
+                    _cacheKey: cacheKey
+                  });
+                  continue;
+                }
+              }
+
+              // 优先级3：原数据本身就是有效的 Data URL / http URL
+              if (diskPath && (diskPath.startsWith('data:') || diskPath.startsWith('blob:') || diskPath.startsWith('http'))) {
+                result.mediaList.push({ ...m, _diskPath: diskPath, _cacheKey: cacheKey });
+                continue;
+              }
+
+              // 都没有 → 标记为缺失
+              result.mediaList.push({
+                type: m.type, name: m.name,
+                url: '',
+                _diskPath: diskPath,
+                _cacheKey: cacheKey,
+                _missing: true
+              });
+            }
+          }
+          return result;
+        }));
+        currentPortfolioItems.forEach(pi => {
+          const n = parseInt(String(pi.id || '').replace('p', ''));
+          if (!isNaN(n) && n >= nextIdCounter) nextIdCounter = n + 1;
+        });
+      }
+
+      // 恢复媒体文件夹连接状态
+      if (localStorage.getItem('portfolio_media_dir') === 'connected') {
+        // 尝试重新获取已有权限的目录句柄
+        try {
+          // 注意：这里不能自动恢复handle，需要用户重新选择
+          updateMediaStatus(true);
+          _mediaDirPath = '(需要重新连接)';
+        } catch(e) {
+          updateMediaStatus(false);
+        }
+      }
+    } catch(e) { console.warn('数据加载失败', e); }
+  } else {
+    currentPortfolioItems = DEFAULT_DATA.portfolioItems.map(p => ({...p, mediaList: p.mediaList ? [...p.mediaList] : []}));
+  }
+  renderGallery();
+}
+
+function loadData() {
+  loadDataAsync(); // 异步加载（不阻塞UI）
+}
+
+function saveData() {
+  const data = {};
+  document.querySelectorAll('[data-key]').forEach(el => { data[el.dataset.key] = el.innerHTML; });
+  // 序列化时只存磁盘路径，不存blob URL（blob URL刷新即失效）
+  data.portfolioItems = currentPortfolioItems.map(pi => ({
+    ...pi,
+    mediaList: (pi.mediaList||[]).map(m => ({
+      type: m.type, name: m.name,
+      url: m._diskPath || m.url,  // 持久化用磁盘路径
+      _diskPath: m._diskPath || m.url
+    }))
+  }));
+  // 头像：只存路径，不存Data URL（Data URL太大，localStorage装不下）
+  data.profilePhotoPath = _profilePhotoPath;
+  // 仅兼容旧版小尺寸Base64；新版大尺寸Data URL不存
+  data.profilePhoto = (_profilePhotoData && !_profilePhotoData.startsWith('data:') && !_profilePhotoData.startsWith('blob:'))
+    ? _profilePhotoData : '';
+  localStorage.setItem('portfolio_data', JSON.stringify(data));
+  showToast('✅ 已保存！', 'success');
+}
+
+// ══════════════════════════════
+//  个人照片上传 → 写入media/
+// ══════════════════════════════
+
+function triggerProfilePhotoUpload() {
+  document.getElementById('profile-photo-input').click();
+}
+
+async function handleProfilePhotoUpload(input) {
+  if (!input.files || !input.files[0]) return;
+  const file = input.files[0];
+  if (file.size > 10 * 1024 * 1024) { showToast('⚠️ 图片不能超过10MB', 'info'); input.value=''; return; }
+
+  try {
+    // 第一步：生成 Data URL 用于立即显示 + 存入 IndexedDB 缓存
+    const dataURL = await fileToDataURL(file);
+    _profilePhotoData = dataURL;
+
+    // 缓存到 IndexedDB（刷新后自动恢复）
+    await idbPut('__profile_photo', dataURL);
+
+    // 第二步：如果媒体目录已连接，同时写入磁盘（用于部署/备份）
+    if (_mediaDirHandle) {
+      const ext = file.name.split('.').pop() || 'jpg';
+      const safeName = `profile.${ext}`;
+      _profilePhotoPath = await writeMediaToDisk(file, safeName, '');
+      if (_profilePhotoPath) {
+        showToast('✅ 照片已保存！（缓存+磁盘双份）', 'success');
+      } else {
+        showToast('✅ 照片已缓存！刷新后自动恢复', 'success');
+      }
+    } else {
+      _profilePhotoPath = '';
+      showToast('✅ 照片已上传！已缓存到浏览器本地（刷新后仍在）', 'success');
+    }
+
+    renderProfilePhoto();
+    saveData();
+  } catch(e) {
+    console.error('上传头像失败:', e);
+    showToast('⚠️ 上传失败: ' + (e.message || '未知错误'), 'info');
+  }
+  input.value = '';
+}
+
+function renderProfilePhoto() {
+  const wrap = document.getElementById('profile-photo-wrap');
+  const img = document.getElementById('profile-photo-img');
+  const placeholder = document.getElementById('profile-photo-placeholder');
+  if (!wrap || !img || !placeholder) return;
+
+  // 只有有效的可显示URL才赋给img.src（data: / blob: / http: 开头）
+  // 纯文件名路径（如 profile.jpg）在file://协议下无法加载，跳过
+  const src = _profilePhotoData;
+  const isValidURL = src && (src.startsWith('data:') || src.startsWith('blob:') || src.startsWith('http'));
+  if (isValidURL) {
+    img.src = src;
+    img.style.display = 'block';
+    placeholder.style.display = 'none';
+    wrap.classList.add('has-photo');
+  } else {
+    img.style.display = 'none';
+    placeholder.style.display = 'flex';
+    wrap.classList.remove('has-photo');
+    // 如果有路径但没连接，提示用户
+    if (_profilePhotoPath && !src && !_mediaDirHandle) {
+      placeholder.querySelector('span').textContent = '📂 请连接媒体文件夹以显示照片';
+    }
+  }
+}
+
+function removeProfilePhoto() {
+  if (!confirm('确定删除个人照片？')) return;
+  _profilePhotoData = '';
+  _profilePhotoPath = '';
+  // 同时清理 IndexedDB 缓存
+  idbDelete('__profile_photo');
+  renderProfilePhoto();
+  saveData();
+  showToast('🗑️ 照片已删除', 'info');
+}
+
+// ══════════════════════════════
+//  画廊渲染 —— 每件作品有封面+媒体计数
+// ══════════════════════════════
+function renderGallery() {
+  const grid = document.getElementById('gallery-grid');
+  grid.innerHTML = '';
+
+  currentPortfolioItems.forEach((pi, idx) => {
+    const div = document.createElement('div');
+    div.className = 'gallery-item' + (pi.layout ? ' ' + pi.layout : '');
+
+    // 封面：用第一张媒体或占位符
+    let coverHTML = '';
+    const mediaCount = pi.mediaList ? pi.mediaList.length : 0;
+
+    if (mediaCount > 0) {
+      // 取第一张有效媒体作为封面（跳过缺失的文件）
+      const firstValid = pi.mediaList.find(m =>
+        m.url && (m.url.startsWith('data:') || m.url.startsWith('blob:') || m.url.startsWith('http'))
+      );
+      if (firstValid) {
+        if (firstValid.type === 'image') {
+          coverHTML = `<img src="${firstValid.url}" alt="${pi.title}" class="gallery-cover">`;
+        } else if (firstValid.type === 'video') {
+          coverHTML = `<video src="${firstValid.url}" muted loop playsinline autoplay class="gallery-cover"></video>`;
+        }
+      }
+      // 如果所有媒体都无效但有记录，显示"待连接"占位
+      if (!coverHTML && mediaCount > 0) {
+        const hasMissing = pi.mediaList.some(m => m._missing);
+        if (hasMissing) {
+          coverHTML = `<div class="gallery-placeholder"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#c9a96e" stroke-width="1.5"><path d="M3 15v4c0 1.1.9 2 2 2h14a2 2 0 002-2v-4M17 8l-5-5-5 5M12 3v12"/></svg><span style="color:#c9a96e">📂 待连接媒体</span></div>`;
+        }
+      }
+    }
+
+    const countBadge = mediaCount > 0 ? `<div class="gallery-media-count">${mediaCount} 张</div>` : '';
+
+    div.innerHTML = `
+      ${coverHTML}
+      ${!coverHTML ? `<div class="gallery-placeholder"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#bbb" stroke-width="1"><rect x="2" y="2" width="20" height="20" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg><span>${pi.title || '未命名作品'}</span></div>` : ''}
+      ${countBadge}
+      <div class="gallery-overlay">
+        <span class="overlay-title">${pi.title || ''}</span>
+        <span class="overlay-desc">${(pi.desc||'').replace(/\n/g,'<br/>')}</span>
+        <span style="font-size:.75rem;color:#c9a96e;margin-top:.3rem">${mediaCount > 0 ? '点击查看 ' + mediaCount + ' 张图片/视频' : '点击添加内容'}</span>
+      </div>
+    `;
+    div.onclick = () => openLightbox(idx);
+
+    // 进入reveal动画
+    div.classList.add('reveal');
+    setTimeout(() => div.classList.add('visible'), 50);
+
+    grid.appendChild(div);
+  });
+}
+
+// ══════════════════════════════
+//  Lightbox — 多媒体轮播
+// ══════════════════════════════
+let lbCurrentIdx = -1;
+let lbCurrentSlide = 0;
+
+function openLightbox(itemIdx) {
+  lbCurrentIdx = itemIdx;
+  lbCurrentSlide = 0;
+  const pi = currentPortfolioItems[itemIdx];
+
+  document.getElementById('lb-title').textContent = pi.title || '';
+  document.getElementById('lb-desc').innerHTML = (pi.desc || '').replace(/\n/g, '<br/>');
+
+  renderLbSlides(pi);
+  renderLbDots(pi.mediaList.length);
+  updateLbNav();
+
+  document.getElementById('lightbox').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('show');
+  document.body.style.overflow = '';
+  lbCurrentIdx = -1;
+
+  // 停止所有视频播放
+  document.querySelectorAll('#lightbox video').forEach(v => { v.pause(); v.currentTime = 0; });
+}
+
+function renderLbSlides(pi) {
+  const vp = document.getElementById('lb-viewport');
+
+  if (!pi.mediaList || pi.mediaList.length === 0) {
+    vp.innerHTML = `<div class="lb-empty-state"><div class="lb-empty-icon">📭</div><p>该作品还没有上传图片或视频</p><p style="font-size:.8rem;color:#bbb">请在管理作品中添加媒体文件</p></div>`;
+    return;
+  }
+
+  vp.innerHTML = '';
+  pi.mediaList.forEach((m, i) => {
+    const slide = document.createElement('div');
+    slide.className = 'lb-slide' + (i === 0 ? ' active' : '');
+    // 只渲染有效URL的媒体
+    const isValidURL = m.url && (m.url.startsWith('data:') || m.url.startsWith('blob:') || m.url.startsWith('http'));
+    if (isValidURL) {
+      if (m.type === 'image') {
+        slide.innerHTML = `<img src="${m.url}" alt="${pi.title} ${i+1}">`;
+      } else if (m.type === 'video') {
+        slide.innerHTML = `<video src="${m.url}" controls playsinline></video>`;
+      }
+    } else {
+      // 缺失文件显示占位
+      slide.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#999;font-size:.9rem"><span>📂 ${m.name||'图片'} — 需连接媒体文件夹</span></div>`;
+    }
+    vp.appendChild(slide);
+  });
+}
+
+function renderLbDots(count) {
+  const dotsContainer = document.getElementById('lb-dots');
+  dotsContainer.innerHTML = '';
+  for (let i = 0; i < count; i++) {
+    const dot = document.createElement('button');
+    dot.className = 'lb-dot' + (i === 0 ? ' active' : '');
+    dot.onclick = (e) => { e.stopPropagation(); lbGoTo(i); };
+    dotsContainer.appendChild(dot);
+  }
+  updateLbCount(count);
+}
+
+function updateLbCount(total) {
+  const c = document.getElementById('lb-count');
+  c.textContent = total > 0 ? `${lbCurrentSlide + 1} / ${total}` : '';
+}
+
+function updateLbNav() {
+  const prevBtn = document.getElementById('lb-prev-btn');
+  const nextBtn = document.getElementById('lb-next-btn');
+  const pi = currentPortfolioItems[lbCurrentIdx];
+  const count = pi.mediaList ? pi.mediaList.length : 0;
+  prevBtn.style.display = count > 1 ? 'flex' : 'none';
+  nextBtn.style.display = count > 1 ? 'flex' : 'none';
+}
+
+function lbGoTo(n) {
+  const slides = document.querySelectorAll('.lb-slide');
+  const dots = document.querySelectorAll('.lb-dot');
+  slides.forEach((s,i) => s.className = 'lb-slide' + (i===n?' active':''));
+  dots.forEach((d,i) => d.className = 'lb-dot' + (i===n?' active':''));
+  lbCurrentSlide = n;
+  updateLbCount(currentPortfolioItems[lbCurrentIdx].mediaList.length);
+  lbPauseAllVideos();
+}
+
+function lbNext() {
+  const pi = currentPortfolioItems[lbCurrentIdx];
+  const count = pi.mediaList.length;
+  if (count <= 1) return;
+  lbGoTo((lbCurrentSlide + 1) % count);
+}
+
+function lbPrev() {
+  const pi = currentPortfolioItems[lbCurrentIdx];
+  const count = pi.mediaList.length;
+  if (count <= 1) return;
+  lbGoTo((lbCurrentSlide - 1 + count) % count);
+}
+
+function lbPauseAllVideos() {
+  document.querySelectorAll('#lb-viewport video').forEach(v => v.pause());
+}
+
+// 键盘导航
+document.addEventListener('keydown', e => {
+  if (lbCurrentIdx < 0) return;
+  if (e.key === 'Escape') closeLightbox();
+  if (e.key === 'ArrowRight') lbNext();
+  if (e.key === 'ArrowLeft') lbPrev();
+});
+
+// ══════════════════════════════
+//  作品管理模态框
+// ══════════════════════════════
+function openPortfolioManager() {
+  document.getElementById('portfolio-modal').classList.add('show');
+  renderPMGrid();
+}
+
+function closePortfolioManager() {
+  document.getElementById('portfolio-modal').classList.remove('show');
+}
+
+function addNewWork(e) {
+  e.stopPropagation();
+  const newItem = {
+    id: 'p' + (++nextIdCounter),
+    title: '新作品 #' + (currentPortfolioItems.length + 1),
+    desc: '点击编辑描述...',
+    layout: '',
+    mediaList: []
+  };
+  currentPortfolioItems.push(newItem);
+  renderPMGrid();
+  renderGallery();
+  saveData();
+  showToast('✅ 新作品已添加！', 'success');
+}
+
+function deleteWork(idx, e) {
+  e.stopPropagation();
+  if (!confirm('确定删除这个作品吗？')) return;
+  currentPortfolioItems.splice(idx, 1);
+  renderPMGrid();
+  renderGallery();
+  saveData();
+  showToast('🗑️ 已删除作品', 'info');
+}
+
+function renderPMGrid() {
+  const grid = document.getElementById('pm-grid');
+  grid.innerHTML = '';
+
+  currentPortfolioItems.forEach((pi, idx) => {
+    const card = document.createElement('div');
+    card.className = 'pm-card';
+
+    // 头部：标题+删除按钮
+    card.innerHTML = `
+      <div class="pm-card-header">
+        <span>#${idx+1}</span>
+        <button class="pm-card-del" onclick="deleteWork(${idx},event)" title="删除此作品">🗑</button>
+      </div>
+      <div class="pm-card-info">
+        <label>作品标题</label>
+        <input type="text" value="${escapeHtml(pi.title)}" placeholder="输入作品标题"
+               onchange="updatePMField(${idx},'title',this.value)">
+        <label>描述（支持换行）</label>
+        <input type="text" value="${escapeHtml(pi.desc||'')}" placeholder="描述..."
+               onchange="updatePMField(${idx},'desc',this.value)">
+        <label>布局</label>
+        <div class="pm-card-layout">
+          <button onclick="setPMLayout(${idx},'')" class="${!pi.layout?'active':''}">默认</button>
+          <button onclick="setPMLayout(${idx},'wide')" class="${pi.layout==='wide'?'active':''}">宽幅</button>
+          <button onclick="setPMLayout(${idx},'tall')" class="${pi.layout==='tall'?'active':''}">竖版</button>
+        </div>
+      </div>
+      <div class="pm-card-media-list" id="pm-media-${idx}">
+        <!-- 媒体缩略图列表 -->
+      </div>
+      <div class="pm-media-add" onclick="document.getElementById('pm-upload-${idx}').click()">
+        📁 添加图片/视频
+        <span style="font-size:.7rem;color:#bbb">jpg/png/gif ≤10MB | mp4/webm ≤50MB</span>
+        <input type="file" id="pm-upload-${idx}" accept="image/*,video*" multiple
+               style="display:none" onchange="handlePMUpload(${idx},this)">
+      </div>
+    `;
+    grid.appendChild(card);
+
+    // 渲染已有媒体的缩略图
+    renderPMMediaThumbs(idx);
+  });
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function updatePMField(idx, field, value) {
+  currentPortfolioItems[idx][field] = value;
+  renderGallery();
+}
+
+function setPMLayout(idx, layout) {
+  currentPortfolioItems[idx].layout = layout;
+  renderPMGrid();
+  renderGallery();
+}
+
+async function handlePMUpload(idx, input) {
+  const files = input.files;
+  if (!files || files.length === 0) return;
+
+  let addedCount = 0;
+  let cachedOnlyCount = 0;
+  const piId = currentPortfolioItems[idx].id || `work_${idx+1}`;
+
+  for (const file of Array.from(files)) {
+    const maxSize = file.type.startsWith('video/') ? 50*1024*1024 : 20*1024*1024;
+    if (file.size > maxSize) {
+      alert(file.type.startsWith('video/') ? '视频不能超过50MB' : '图片不能超过20MB');
+      continue;
+    }
+
+    try {
+      const isVideo = file.type.startsWith('video/');
+      const ext = file.name.split('.').pop() || (file.type.includes('png') ? 'png' : 'jpg');
+      const safeName = makeSafeFilename(file.name || `img_${Date.now()}.${ext}`);
+      // 每个媒体一个唯一缓存key
+      const cacheKey = `media_${piId}_${safeName}_${Date.now()}`;
+
+      // 第一步：生成 Data URL + 存入 IndexedDB 缓存（始终执行）
+      const displayURL = await fileToDataURL(file);
+      await idbPut(cacheKey, displayURL);
+
+      // 第二步：如果有媒体目录，同时写入磁盘（可选）
+      let diskPath = '';
+      if (_mediaDirHandle) {
+        diskPath = await writeMediaToDisk(file, safeName, piId) || '';
+      }
+
+      currentPortfolioItems[idx].mediaList.push({
+        type: isVideo ? 'video' : 'image',
+        url: displayURL,
+        _diskPath: diskPath,
+        _cacheKey: cacheKey,
+        name: safeName
+      });
+      addedCount++;
+      if (!diskPath) cachedOnlyCount++;
+    } catch(e) {
+      console.error('上传媒体失败:', e);
+      showToast(`⚠️ ${file.name} 上传失败`, 'info');
+    }
+  }
+
+  if (addedCount > 0) {
+    renderPMMediaThumbs(idx);
+    renderGallery();
+    saveData();
+    if (cachedOnlyCount === addedCount) {
+      showToast(`✅ ${addedCount} 个文件已上传！已缓存到浏览器本地（刷新后仍在）`, 'success');
+    } else if (cachedOnlyCount > 0) {
+      showToast(`✅ ${addedCount} 已上传（${addedCount - cachedOnlyCount} 个写入磁盘 + ${cachedOnlyCount} 个已缓存）`, 'success');
+    } else {
+      showToast(`✅ ${addedCount} 个文件已保存到磁盘！`, 'success');
+    }
+  }
+  input.value = '';
+}
+
+function renderPMMediaThumbs(idx) {
+  const container = document.getElementById('pm-media-' + idx);
+  if (!container) return;
+
+  container.innerHTML = '';
+  const pi = currentPortfolioItems[idx];
+
+  if (!pi.mediaList || pi.mediaList.length === 0) {
+    container.innerHTML = '<div style="text-align:center;color:#bbb;font-size:.78rem;padding:.5rem">暂无媒体文件</div>';
+    return;
+  }
+
+  pi.mediaList.forEach((m, mIdx) => {
+    const thumb = document.createElement('div');
+    thumb.className = 'pm-media-thumb';
+    thumb.draggable = true;
+    thumb.dataset.idx = idx;
+    thumb.dataset.mIdx = mIdx;
+    // 媒体内容（只渲染有效URL，缺失文件显示占位符）
+    const isValidURL = m.url && (m.url.startsWith('data:') || m.url.startsWith('blob:') || m.url.startsWith('http'));
+    if (isValidURL) {
+      if (m.type === 'image') {
+        thumb.innerHTML = `<img src="${m.url}" alt="${m.name||''}">`;
+      } else if (m.type === 'video') {
+        thumb.innerHTML = `<video src="${m.url}" muted playsinline></video>`;
+      }
+    } else {
+      thumb.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;background:#f5f5f5;color:#999;font-size:.7rem;text-align:center;padding:.3rem">📂 缺失</div>`;
+    }
+    thumb.title = (m.name || ('媒体 '+(mIdx+1))) + (isValidURL ? ' — 拖拽排序 · 点击放大' : ' — 需连接媒体文件夹');
+
+    // ── 左上角操作按钮组：上移 / 下移 / 预览 ──
+    const actions = document.createElement('div');
+    actions.className = 'pm-thumb-actions';
+    actions.onclick = (e) => e.stopPropagation(); // 防止冒泡到thumb的点击事件
+
+    // 上移 ↑
+    const upBtn = document.createElement('button');
+    upBtn.className = 'pm-btn-up'; upBtn.textContent = '▲'; upBtn.title = '上移一位';
+    upBtn.style.visibility = mIdx > 0 ? 'visible' : 'hidden';
+    upBtn.onclick = () => { e.stopPropagation(); movePMMedia(idx, mIdx, -1); };
+    // 下移 ↓
+    const downBtn = document.createElement('button');
+    downBtn.className = 'pm-btn-down'; downBtn.textContent = '▼'; downBtn.title = '下移一位';
+    downBtn.style.visibility = mIdx < pi.mediaList.length - 1 ? 'visible' : 'hidden';
+    downBtn.onclick = () => { e.stopPropagation(); movePMMedia(idx, mIdx, 1); };
+    // 放大预览 🔍
+    const previewBtn = document.createElement('button');
+    previewBtn.className = 'pm-btn-preview'; previewBtn.textContent = '🔍'; previewBtn.title = '放大预览';
+    previewBtn.onclick = () => openPMPreview(idx, mIdx);
+
+    actions.appendChild(upBtn);
+    actions.appendChild(downBtn);
+    actions.appendChild(previewBtn);
+    thumb.appendChild(actions);
+
+    // 删除按钮（右侧）
+    const delBtn = document.createElement('button');
+    delBtn.className = 'pm-media-thumb-remove';
+    delBtn.textContent = '✕';
+    delBtn.title = '删除此媒体';
+    delBtn.onclick = (e) => { e.stopPropagation(); removePMMedia(idx, mIdx); };
+    thumb.appendChild(delBtn);
+
+    // ═══ 拖拽排序事件 ═══
+    thumb.ondragstart = (e) => {
+      thumb.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', JSON.stringify({idx, mIdx}));
+      // 延迟设透明度让拖动图像正常显示
+      setTimeout(() => thumb.classList.add('dragging'), 0);
+    };
+    thumb.ondragend = () => {
+      thumb.classList.remove('dragging');
+      document.querySelectorAll('.pm-media-thumb.drag-over').forEach(el => el.classList.remove('drag-over'));
+    };
+    thumb.ondragover = (e) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      if (thumb !== document.querySelector('.pm-media-thumb.dragging')) {
+        thumb.classList.add('drag-over');
+      }
+    };
+    thumb.ondragleave = () => thumb.classList.remove('drag-over');
+    thumb.ondrop = (e) => {
+      e.preventDefault();
+      thumb.classList.remove('drag-over');
+      try {
+        const data = JSON.parse(e.dataTransfer.getData('text/plain'));
+        if (data.idx !== idx || data.mIdx === mIdx) return; // 同位置忽略
+        movePMMediaTo(idx, data.mIdx, mIdx);
+      } catch(err) { /* ignore */ }
+    };
+
+    // 点击缩略图 → 打开放大预览
+    thumb.onclick = (e) => {
+      if (e.target.closest('.pm-thumb-actions') || e.target.closest('.pm-media-thumb-remove')) return;
+      openPMPreview(idx, mIdx);
+    };
+
+    container.appendChild(thumb);
+  });
+}
+
+// ─── 上下移动一位 ───
+function movePMMedia(idx, mIdx, direction) {
+  const pi = currentPortfolioItems[idx];
+  const newIdx = mIdx + direction;
+  if (newIdx < 0 || newIdx >= pi.mediaList.length) return;
+  // 交换
+  [pi.mediaList[mIdx], pi.mediaList[newIdx]] = [pi.mediaList[newIdx], pi.mediaList[mIdx]];
+  renderPMMediaThumbs(idx);
+  renderGallery();
+  saveData();
+}
+
+// ─── 拖拽放到目标位置 ───
+function movePMMediaTo(idx, fromIdx, toIdx) {
+  const list = currentPortfolioItems[idx].mediaList;
+  const [moved] = list.splice(fromIdx, 1);
+  list.splice(toIdx, 0, moved);
+  renderPMMediaThumbs(idx);
+  renderGallery();
+  saveData();
+  showToast('✅ 排序已更新', 'success');
+}
+
+function removePMMedia(idx, mIdx) {
+  if (!confirm('删除这张媒体？')) return;
+  const m = currentPortfolioItems[idx].mediaList[mIdx];
+  // 同时清理 IndexedDB 缓存
+  if (m && m._cacheKey) { idbDelete(m._cacheKey); }
+  currentPortfolioItems[idx].mediaList.splice(mIdx, 1);
+  renderPMMediaThumbs(idx);
+  renderGallery();
+  saveData();
+  showToast('🗑️ 媒体已删除', 'info');
+}
+
+// ══════════════════════════════
+//  管理面板内媒体预览（放大查看）
+// ══════════════════════════════
+let _pmPreviewWorkIdx = -1;
+let _pmPreviewMediaIdx = 0;
+
+function openPMPreview(workIdx, mediaIdx) {
+  _pmPreviewWorkIdx = workIdx;
+  _pmPreviewMediaIdx = mediaIdx;
+  const modal = document.getElementById('pm-preview-modal');
+  modal.style.display = 'flex';
+  renderPMSlide();
+  document.addEventListener('keydown', pmPreviewKeyHandler);
+}
+
+function closePMPreview() {
+  const modal = document.getElementById('pm-preview-modal');
+  modal.style.display = 'none';
+  // 停止视频
+  const v = modal.querySelector('video');
+  if (v) { v.pause(); v.currentTime = 0; }
+  document.removeEventListener('keydown', pmPreviewKeyHandler);
+}
+
+function renderPMSlide() {
+  const pi = currentPortfolioItems[_pmPreviewWorkIdx];
+  const m = pi.mediaList[_pmPreviewMediaIdx];
+  const content = document.getElementById('pm-preview-content');
+  const nameEl = document.getElementById('pm-preview-name');
+  const counterEl = document.getElementById('pm-preview-counter');
+
+  nameEl.textContent = m.name || (m.type === 'image' ? '图片' : '视频');
+  counterEl.textContent = (_pmPreviewMediaIdx + 1) + ' / ' + pi.mediaList.length;
+
+  if (m.type === 'image') {
+    content.innerHTML = '<img src="' + m.url + '" style="max-width:100%;max-height:70vh;object-fit:contain;border-radius:8px">';
+  } else {
+    content.innerHTML = '<video src="' + m.url + '" controls autoplay playsinline style="max-width:100%;max-height:70vh;border-radius:8px"></video>';
+  }
+}
+
+function pmNextSlide() {
+  const pi = currentPortfolioItems[_pmPreviewWorkIdx];
+  if (_pmPreviewMediaIdx < pi.mediaList.length - 1) { _pmPreviewMediaIdx++; renderPMSlide(); }
+}
+function pmPrevSlide() {
+  if (_pmPreviewMediaIdx > 0) { _pmPreviewMediaIdx--; renderPMSlide(); }
+}
+function pmPreviewKeyHandler(e) {
+  if (e.key === 'Escape') closePMPreview();
+  else if (e.key === 'ArrowRight') pmNextSlide();
+  else if (e.key === 'ArrowLeft') pmPrevSlide();
+}
+
+// ═══ 导出部署版（外部媒体模式）═══
+function exportClean() {
+  saveData();
+
+  let html = document.documentElement.outerHTML;
+
+  // 移除编辑相关
+  html = html.replace(/<div id="edit-toolbar"[^>]*>[\s\S]*?<\/div>/, '');
+  html = html.replace(/<div id="edit-hint"[^>]*>[\s\S]*?<\/div>/, '');
+  html = html.replace(/<button id="edit-toggle-btn"[^>]*>[^<]*<\/button>/, '');
+  html = html.replace(/<button id="works-manage-btn"[^>]*>[\s\S]*?<\/button>/, '');
+  html = html.replace(/#edit-toggle-btn[^{]*{[^}]+}/g, '');
+  html = html.replace(/#edit-toolbar[^{]*{[^}]+}/g, '');
+  html = html.replace(/#edit-hint[^{]*{[^}]+}/g, '');
+  html = html.replace(/\[contenteditable\][^{]*{[^}]+}/g, '');
+  html = html.replace(/\[contenteditable\][^,]*,/g, '');
+  html = html.replace(/ contenteditable="true"/g, '');
+  html = html.replace(/ data-key="[^"]*"/g, '');
+
+  // 移除模态框
+  html = html.replace(/<div id="portfolio-modal"[^>]*>[\s\S]*?<\/div>\s*(<!-- .*? -->)?\s*(<!-- ═══ Lightbox|<!-- ═══ Footer)/, '$2');
+
+  // 保留Lightbox但移除管理面板CSS
+  html = html.replace(/\/\*\s*作品管理模态框\s*\*\/[\s\S]*?(?=\/\*\s*Lightbox)/, '');
+
+  // 清理媒体文件夹状态CSS
+  html = html.replace(/\/\*\s*── 媒体文件夹状态指示\s*──[\s\S]*?(?=\/* ═══)/, '');
+
+  // 精简JS
+  const scriptMatch = html.match(/<script>([\s\S]*)<\/script>/);
+  if (scriptMatch) {
+    const cleanScript = generateExportScript();
+    html = html.replace(scriptMatch[0], '<script>' + cleanScript + '</script>');
+  }
+
+  // 移除多余CSS
+  html = html.replace(/\.toast[^{]*{[^}]+}\n?/g, '');
+  html = html.replace(/@keyframes toastIn[^}]+\}\n?/g, '');
+  html = html.replace(/@keyframes toastOut[^}]+\}\n?/g, '');
+  html = html.replace(/#portfolio-modal\s*\{[^}]+\}\n*/g, '');
+  html = html.replace(/\.pm-[^{]*\{[^}]*\}\n*/g, '');
+  html = html.replace(/\.btn-manage-works[^{]*\{[^}]*\}\n*/g, '');
+  html = html.replace(/\.media-dir-status[^{]*\{[^}]*\}\n*/g, '');
+  html = html.replace(/#btn-set-media-dir[^{]*\{[^}]*\}\n*/g, '');
+
+  const blob = new Blob([html], {type:'text/html'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download='index.html'; a.click();
+  URL.revokeObjectURL(url);
+  showToast('📤 index.html 已导出！请将 media/ 文件夹一起复制到部署位置', 'success');
+}
+
+// 生成导出版本所需的精简JS（只保留画廊渲染和Lightbox）
+function generateExportScript() {
+  const embeddedData = JSON.stringify(currentPortfolioItems);
+  return `
+var PORTFOLIO_ITEMS = ${embeddedData};
+(function(){
+  var grid=document.getElementById('gallery-grid');
+  PORTFOLIO_ITEMS.forEach(function(pi,idx){
+    var div=document.createElement('div');
+    div.className='gallery-item'+(pi.layout?' '+pi.layout:'');
+    var mc=pi.mediaList?pi.mediaList.length:0,ch='';
+    if(mc>0){var f=pi.mediaList[0];if(f.type==='image')ch='<img src="'+f.url+'" class="gallery-cover">';
+    else if(f.type==='video')ch='<video src="'+f.url+'" muted loop playsinline autoplay class="gallery-cover">'}
+    var cb=mc>0?'<div class="gallery-media-count">'+mc+' 张</div>':'';
+    div.innerHTML=(ch||'<div class="gallery-placeholder"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#bbb" stroke-width="1"><rect x="2" y="2" width="20" height="20" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg><span>'+pi.title+'</span></div>')
+      +cb+'<div class="gallery-overlay"><span class="overlay-title">'+pi.title+'</span>'
+      +'<span class="overlay-desc">'+(pi.desc||'').replace(/\\n/g,'<br/>')+'</span>'
+      +'<span style="font-size:.75rem;color:#c9a96e;margin-top:.3rem">'+(mc>0?'点击查看 '+mc+' 张':'')+'</span></div>';
+    div.onclick=function(){openLightboxEx(idx)};
+    grid.appendChild(div);
+  });
+})();
+var _lbIdx=-1,_lbSl=0;
+function openLightboxEx(idx){_lbIdx=idx;_lbSl=0;var pi=PORTFOLIO_ITEMS[idx];
+document.getElementById('lb-title').textContent=pi.title||'';
+document.getElementById('lb-desc').innerHTML=(pi.desc||'').replace(/\\n/g,'<br/>');
+renderLBEx(pi);document.getElementById('lightbox').classList.add('show');document.body.style.overflow='hidden'}
+function closeLightbox(){document.getElementById('lightbox').classList.remove('show');document.body.style.overflow='';
+_lbIdx=-1;document.querySelectorAll('#lightbox video').forEach(function(v){v.pause();v.currentTime=0})}
+function renderLBEx(pi){var vp=document.getElementById('lb-viewport');
+if(!pi.mediaList||!pi.mediaList.length){vp.innerHTML='<div class="lb-empty-state"><div class="lb-empty-icon">📭</div><p>暂无媒体</p></div>';return}
+vp.innerHTML='';pi.mediaList.forEach(function(m,i){var s=document.createElement('div');
+s.className='lb-slide'+(i===0?' active':'');
+if(m.type==='image')s.innerHTML='<img src="'+m.url+'" alt="">';else if(m.type==='video')s.innerHTML='<video src="'+m.url+'" controls playsinline></video>';
+vp.appendChild(s)});
+var dc=document.getElementById('lb-dots');dc.innerHTML='';
+for(var j=0;j<pi.mediaList.length;j++){var d=document.createElement('button');d.className='lb-dot'+(j===0?' active':'');
+d.onclick=function(){goToLBEx(j)};dc.appendChild(d)}
+updateLBCountEx()}
+function goToLBEx(n){var ss=document.querySelectorAll('.lb-slide'),ds=document.querySelectorAll('.lb-dot');
+ss.forEach(function(s,i){s.className='lb-slide'+(i===n?' active':'')});
+ds.forEach(function(d,i){d.className='lb-dot'+(i===n?' active':'')});
+_lbSl=n;updateLBCountEx()}
+function updateLBCountEx(){var c=document.getElementById('lb-count');
+var cnt=PORTFOLIO_ITEMS[_lbIdx]?PORTFOLIO_ITEMS[_lbIdx].mediaList.length:0;
+c.textContent=cnt>0?(_lbSl+1)+' / '+cnt:''}
+function lbNextEx(){var pi=PORTFOLIO_ITEMS[_lbIdx],cnt=pi.mediaList.length;if(cnt<=1)return;goToLBEx((_lbSl+1)%cnt)}
+function lbPrevEx(){var pi=PORTFOLIO_ITEMS[_lbIdx],cnt=pi.mediaList.length;if(cnt<=1)return;goToLBEx((_lbSl-1+cnt)%cnt)}
+document.getElementById('lb-next-btn').onclick=function(e){e.stopPropagation();lbNextEx()};
+document.getElementById('lb-prev-btn').onclick=function(e){e.stopPropagation();lbPrevEx()};
+document.addEventListener('keydown',function(e){if(_lbIdx<0)return;if(e.key==='Escape')closeLightbox();if(e.key==='ArrowRight')lbNextEx();if(e.key==='ArrowLeft')lbPrevEx()});
+const nav=document.getElementById('nav');
+window.addEventListener('scroll',function(){nav.classList.toggle('scrolled',window.scrollY>50)});
+const obs=new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting)e.target.classList.add('visible')})},
+{threshold:.1,rootMargin:'0px 0px -40px 0px'});
+document.querySelectorAll('.reveal').forEach(function(el){obs.observe(el)});
+document.querySelectorAll('a[href^="#"]').forEach(function(a){a.addEventListener('click',function(e){e.preventDefault();
+var t=document.querySelector(this.getAttribute('href'));if(t){var off=80,top=t.getBoundingClientRect().top+window.scrollY-off;window.scrollTo({top:top,behavior:'smooth'})}})});
+`;
+}
+
+// ═══ 其他 ═══
+function resetData() {
+  if (!confirm('确定恢复默认内容？所有修改都将丢失。')) return;
+  _profilePhotoData = '';
+  _profilePhotoPath = '';
+  renderProfilePhoto();
+  localStorage.removeItem('portfolio_data');
+  localStorage.removeItem('portfolio_media_dir');
+  _mediaDirHandle = null;
+  updateMediaStatus(false);
+  location.reload();
+}
+
+function toggleEdit() {
+  isEditing = !isEditing;
+  document.body.classList.toggle('editing', isEditing);
+  document.getElementById('edit-toolbar').classList.toggle('show', isEditing);
+  document.getElementById('edit-hint').classList.toggle('show', isEditing);
+  document.getElementById('edit-toggle-btn').style.display = isEditing ? 'none' : 'flex';
+  document.querySelectorAll('[data-key]').forEach(el => { el.contentEditable = isEditing ? 'true' : 'false'; });
+}
+
+function showToast(msg, type) {
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type || 'info'}`;
+  toast.textContent = msg;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 2500);
+}
+
+// ═══ 页面加载 ═══
+document.addEventListener('DOMContentLoaded', async function() {
+  // 先初始化 IndexedDB 缓存层（异步，不阻塞）
+  await initIDB();
+  // 再加载数据（会优先从 IndexedDB 恢复图片）
+  loadData();
+
+  // Nav scroll
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', () => { nav.classList.toggle('scrolled', window.scrollY > 50); });
+
+  // Reveal animations
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('visible'); });
+  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  // Smooth scroll
+  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function(e) {
+      e.preventDefault();
+      const target = document.querySelector(this.getAttribute('href'));
+      if (target) {
+        const offset = 80;
+        const top = target.getBoundingClientRect().top + window.scrollY - offset;
+        window.scrollTo({ top, behavior: 'smooth' });
+      }
+    });
+  });
+});
+</script>
+
+</body>
+</html>
